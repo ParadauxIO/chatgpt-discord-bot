@@ -12,11 +12,9 @@ public class DiscordBot {
 
     private final JDA client;
     private final ConfigHandler.Config config;
-    private final ChatGPTImpl chatgpt;
 
-    public DiscordBot(ConfigHandler.Config config, ChatGPTImpl chatgpt) {
+    public DiscordBot(ConfigHandler.Config config) {
         this.config = config;
-        this.chatgpt = chatgpt;
         this.client = createClient();
     }
 
@@ -24,7 +22,7 @@ public class DiscordBot {
         return JDABuilder.createDefault(config.getDiscordToken()) // enable all default intents
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT) // also enable privileged intent
                 .addEventListeners(new ReadyListener())
-                .addEventListeners(new AIChannelMessageReceivedListener(config.getListeningChannel(), chatgpt))
+                .addEventListeners(new AIChannelMessageReceivedListener(config.getGuilds()))
                 .build();
     }
 }

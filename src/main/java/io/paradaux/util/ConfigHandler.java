@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 
 public class ConfigHandler {
 
@@ -26,7 +27,9 @@ public class ConfigHandler {
             Gson gson = builder.create();
 
             BufferedReader bufferedReader = new BufferedReader(new FileReader("config.json"));
-            return gson.fromJson(bufferedReader, Config.class);
+
+            config = gson.fromJson(bufferedReader, Config.class);
+            return config;
         } catch (IOException e) {
             throw new RuntimeException("Failed to load config");
         }
@@ -39,14 +42,7 @@ public class ConfigHandler {
         @SerializedName("openai_token")
         private String openaiToken;
 
-        @SerializedName("listening_channel")
-        private String listeningChannel;
-
-        public Config(String discordToken, String openaiToken, String listeningChannel) {
-            this.discordToken = discordToken;
-            this.openaiToken = openaiToken;
-            this.listeningChannel = listeningChannel;
-        }
+        private HashMap<String, String> guilds;
 
         public String getDiscordToken() {
             return discordToken;
@@ -56,8 +52,8 @@ public class ConfigHandler {
             return openaiToken;
         }
 
-        public String getListeningChannel() {
-            return listeningChannel;
+        public HashMap<String, String> getGuilds() {
+            return guilds;
         }
     }
 

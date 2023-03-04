@@ -1,5 +1,6 @@
 package io.paradaux.bot.listeners;
 
+import io.paradaux.openai.ChatCache;
 import io.paradaux.openai.ChatGPTImpl;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -7,29 +8,31 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+
 public class AIChannelMessageReceivedListener implements EventListener {
 
-    private final String listeningChannel;
-    private final ChatGPTImpl chatGPT;
+    private final HashMap<String, String> guilds;
 
-    public AIChannelMessageReceivedListener(String listeningChannel, ChatGPTImpl chatGPT) {
-        this.listeningChannel = listeningChannel;
-        this.chatGPT = chatGPT;
+    public AIChannelMessageReceivedListener(HashMap<String, String> guilds) {
+        this.guilds = guilds;
     }
 
     @Override
     public void onEvent(@NotNull GenericEvent genericEvent) {
          if (genericEvent instanceof MessageReceivedEvent event) {
-            if (!event.getChannel().getId().equals(listeningChannel)) {
+             // If not in the correct channel for this guild
+            if (!event.getChannel().getId().equals(guilds.get(event.getGuild().getId()))) {
                 return;
             }
 
+            // Don't respond to yourself or other bots!
             if (event.getAuthor().isBot()) {
                 return;
             }
 
-            String message = event.getMessage().getContentRaw();
-            String response = chatGPT.respond(event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + ": " + message);
+            // Respond using the correct ChatGPT instance according to the guild the message was sent into.
+            String response = ChatCache.respond(event.getGuild().getId(), event.getAuthor(), event.getMessage().getContentRaw());
             event.getMessage().reply(response).complete();
         }
     }

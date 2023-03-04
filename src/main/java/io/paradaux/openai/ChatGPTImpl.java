@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.theokanning.openai.completion.chat.*;
 import com.theokanning.openai.service.OpenAiService;
 import io.paradaux.util.ConfigHandler;
+import io.paradaux.util.IOUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,17 +13,22 @@ public class ChatGPTImpl {
 
     private final OpenAiService service;
     private List<ChatMessage> messages;
+    private String listeningChannel;
+    private String prompt;
 
-    public ChatGPTImpl(ConfigHandler.Config config) {
-        messages = new ArrayList<>();
-        messages.add(new ChatMessage("system", "You are my servant."));
-        service = new OpenAiService(config.getOpenaiToken());
+    public ChatGPTImpl(String listeningChannel, String prompt, String openaiToken) {
+        this.listeningChannel = listeningChannel;
+        this.prompt = prompt;
 
+        // Set the API key
+        service = new OpenAiService(openaiToken);
+
+        // Spawn a new ChatGPT session with the system prompt.
         init();
     }
 
     public String init() {
-        return sendRequest(ChatMessageRole.SYSTEM.value(), ConfigHandler.getFileContentsAsString("prompt.txt"))
+        return sendRequest(ChatMessageRole.SYSTEM.value(), prompt)
                 .getMessage()
                 .getContent();
     }
