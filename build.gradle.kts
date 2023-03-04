@@ -1,11 +1,14 @@
 plugins {
     id("java")
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    application
 }
 
 group = "io.paradaux"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
+    gradlePluginPortal()
     mavenCentral()
 }
 
@@ -19,6 +22,10 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+}
+
+application {
+    mainClass.set("io.paradaux.Main")
 }
 
 tasks.getByName<Test>("test") {
