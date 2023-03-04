@@ -8,3 +8,4 @@ build/
 
 # Private !
 config.json
+chatgpt-discord-bot.log
