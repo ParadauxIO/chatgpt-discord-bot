@@ -1,0 +1,10 @@
+# Gradle
+.gradle/
+build/
+
+# Intellij
+*.iml
+.idea/
+
+# Private !
+config.json

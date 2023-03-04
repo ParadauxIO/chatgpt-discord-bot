@@ -1,11 +1,15 @@
 package io.paradaux.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
 public class ConfigHandler {
+
+
 
     private static final String CONFIG_LOCATION = "/config.json";
 
@@ -15,49 +19,17 @@ public class ConfigHandler {
     }
 
     public static Config loadConfig() {
-        if (config != null) {
-            throw new IllegalStateException("Configuration has already been loaded.");
-        }
+        try {
+            IOUtils.deployFiles(LoggerFactory.getLogger(ConfigHandler.class));
 
-        try (Reader reader = new InputStreamReader(ConfigHandler.class.getResourceAsStream(CONFIG_LOCATION))) {
-            config = new Gson().fromJson(reader, Config.class);
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
 
-            if (config == null) {
-                throw new IOException();
-            }
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("config.json"));
+            return gson.fromJson(bufferedReader, Config.class);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to load configuration: " + e.getMessage());
+            throw new RuntimeException("Failed to load config");
         }
-
-        return config;
-    }
-
-    // Credit to chatgpt writing this for me -- I was too lazy
-    public static String getFileContentsAsString(String file) {
-        // Get the path of the resource file
-        InputStream inputStream = ConfigHandler.class.getClassLoader().getResourceAsStream(file);
-
-        if (inputStream == null) {
-            throw new IllegalStateException("File does not exist");
-        }
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-
-            // Read the file content line by line and append it to the StringBuilder
-            while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
-                stringBuilder.append(System.getProperty("line.separator"));
-            }
-
-            // Convert the StringBuilder to a String and return
-            return stringBuilder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     public static class Config {
