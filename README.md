@@ -8,6 +8,8 @@
 This project is a simple-to-use Discord Bot which allows you to have interactive
 experiences with ChatGPT as if it was a member of your discord server.
 
+This project requires Java 17 to function.
+
 # Installation
 
 ```bash
