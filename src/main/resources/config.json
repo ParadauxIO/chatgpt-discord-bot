@@ -1,7 +1,0 @@
-{
-  "discord_token": "",
-  "openai_token": "",
-  "guilds": {
-    "id": "channel_id"
-  }
-}
