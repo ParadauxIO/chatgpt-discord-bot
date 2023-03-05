@@ -77,13 +77,12 @@ public class ConfigHandler {
     public static class BotConfig {
         private String token;
         private boolean respondOnMention;
-        private boolean respondOnReply;
-        private String[] wakeWords;
+        private List<String> wakeWords;
         private double randomResponseChance;
         private int messageHistoryLength;
         private List<String> listeningChannels;
-        private String[] disabledGuilds;
-        private String[] disabledChannels;
+        private List<String> disabledGuilds;
+        private List<String> disabledChannels;
 
         public String token() {
             return token;
@@ -93,11 +92,7 @@ public class ConfigHandler {
             return respondOnMention;
         }
 
-        public boolean respondOnReply() {
-            return respondOnReply;
-        }
-
-        public String[] wakeWords() {
+        public List<String> wakeWords() {
             return wakeWords;
         }
 
@@ -113,11 +108,11 @@ public class ConfigHandler {
             return listeningChannels;
         }
 
-        public String[] disabledGuilds() {
+        public List<String> disabledGuilds() {
             return disabledGuilds;
         }
 
-        public String[] disabledChannels() {
+        public List<String> disabledChannels() {
             return disabledChannels;
         }
     }
