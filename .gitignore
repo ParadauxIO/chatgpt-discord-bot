@@ -7,5 +7,5 @@ build/
 .idea/
 
 # Private !
-config.json
-chatgpt-discord-bot.log
+sylvester.log
+sylvester.conf

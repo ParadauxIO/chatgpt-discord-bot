@@ -41,11 +41,11 @@ public class IOUtils {
     public static void deployFiles(Logger logger) {
         String jarLocation = System.getProperty("user.dir");
 
-        if (!new File("config.json").exists()) {
+        if (!new File("sylvester.conf").exists()) {
             try {
-                exportResource("/config.json", jarLocation + "/config.json");
+                exportResource("/sylvester.conf", jarLocation + "/sylvester.conf");
             } catch (Exception exception) {
-                logger.error("Failed to deploy config.json\n", exception);
+                logger.error("Failed to deploy sylvester.conf\n", exception);
             }
         }
     }

@@ -15,8 +15,6 @@ public class ReadyListener implements EventListener {
             *-----------------*%n
             """;
 
-
-
     @Override
     public void onEvent(@NotNull GenericEvent genericEvent) {
         if (genericEvent instanceof ReadyEvent event) {

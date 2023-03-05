@@ -1,64 +1,67 @@
 package io.paradaux.openai;
 
-import com.google.gson.GsonBuilder;
-import com.theokanning.openai.completion.chat.*;
+import com.theokanning.openai.completion.chat.ChatCompletionChoice;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 import io.paradaux.util.ConfigHandler;
-import io.paradaux.util.IOUtils;
+import net.dv8tion.jda.api.entities.Message;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class ChatGPTImpl {
 
+    private static final ConfigHandler.Config config = ConfigHandler.getConfig();
+
     private final OpenAiService service;
-    private List<ChatMessage> messages;
-    private String listeningChannel;
-    private String prompt;
 
-    public ChatGPTImpl(String listeningChannel, String prompt, String openaiToken) {
-        this.listeningChannel = listeningChannel;
-        this.prompt = prompt;
+    // Map between channel IDs and their respective histories
+    private final HashMap<String, GPTMessageQueue> messageHistory;
 
+    public ChatGPTImpl() {
         // Set the API key
-        service = new OpenAiService(openaiToken);
-
-        // Spawn a new ChatGPT session with the system prompt.
-        init();
+        messageHistory = new HashMap<>();
+        service = new OpenAiService(config.openai().token());
     }
 
-    public String init() {
-        return sendRequest(ChatMessageRole.SYSTEM.value(), prompt)
-                .getMessage()
-                .getContent();
-    }
-
-    public String respond(String message) {
-        return sendRequest(ChatMessageRole.USER.value(), message)
-                .getMessage()
-                .getContent();
-    }
-
-    private ChatCompletionChoice sendRequest(String role, String message) {
-        // If it's a system message then reset the message history
-        if (role.equals(ChatMessageRole.SYSTEM.value())) {
-            messages = new ArrayList<>();
+    public String respond(Message message) {
+        if (!messageHistory.containsKey(message.getChannel().getId())) {
+            messageHistory.put(message.getChannel().getId(), new GPTMessageQueue(config.bot().messageHistoryLength(),
+                    config.openai().prompt()));
         }
 
+        String formattedMessage = String.format("%s#%s: %s", message.getAuthor().getName(),
+                message.getAuthor().getDiscriminator(), message.getContentRaw());
+
+        return sendRequest(ChatMessageRole.USER.value(), formattedMessage, message.getChannel().getId())
+                .getMessage()
+                .getContent();
+    }
+
+    private ChatCompletionChoice sendRequest(String role, String message, String channel) {
+        // If it's a system message then reset the message history
+        if (role.equals(ChatMessageRole.SYSTEM.value())) {
+            messageHistory.put(channel, new GPTMessageQueue(config.bot().messageHistoryLength(), config.openai().prompt()));
+        }
+
+        // Get the message history
+        GPTMessageQueue history = messageHistory.get(channel);
+
         // Add our new message to the message history
-        messages.add(new ChatMessage("user", message));
+        history.queue(new ChatMessage(role, message));
 
         // Build the GPT request object
         ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .messages(messages)
-                .maxTokens(150)
-                .temperature(0.6)
-                .topP(0.8)
-                .model("gpt-3.5-turbo")
+                .messages(history.toList())
+                .maxTokens(config.openai().maxTokens())
+                .temperature(config.openai().temperature())
+                .topP(config.openai().topP())
+                .model(config.openai().model())
                 .build();
 
         ChatCompletionChoice result = service.createChatCompletion(request).getChoices().get(0);
-        messages.add(result.getMessage());
+        history.queue(result.getMessage());
         return result;
     }
 }
