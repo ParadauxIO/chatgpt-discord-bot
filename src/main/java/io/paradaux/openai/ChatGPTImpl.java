@@ -5,41 +5,40 @@ import com.theokanning.openai.completion.chat.*;
 import com.theokanning.openai.service.OpenAiService;
 import io.paradaux.util.ConfigHandler;
 import io.paradaux.util.IOUtils;
+import net.dv8tion.jda.api.entities.Message;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ChatGPTImpl {
 
     private final OpenAiService service;
-    private List<ChatMessage> messages;
-    private String listeningChannel;
-    private String prompt;
 
-    public ChatGPTImpl(String listeningChannel, String prompt, String openaiToken) {
-        this.listeningChannel = listeningChannel;
+    // Map between channel IDs and their respective histories
+    private final HashMap<String, GPTMessageQueue> messageHistory;
+    private List<ChatMessage> messages;
+    private final String prompt;
+
+    public ChatGPTImpl(String prompt, String openaiToken) {
         this.prompt = prompt;
+        this.messageHistory = new HashMap<>();
 
         // Set the API key
         service = new OpenAiService(openaiToken);
-
-        // Spawn a new ChatGPT session with the system prompt.
-        init();
     }
 
-    public String init() {
-        return sendRequest(ChatMessageRole.SYSTEM.value(), prompt)
+    public String respond(Message message) {
+        if (!messageHistory.containsKey(message.getChannel().getId())) {
+            messageHistory.put(message.getChannel().getId(), new GPTMessageQueue(10, prompt));
+        }
+
+        return sendRequest(ChatMessageRole.USER.value(), message.getContentRaw(), message.getChannel().getId())
                 .getMessage()
                 .getContent();
     }
 
-    public String respond(String message) {
-        return sendRequest(ChatMessageRole.USER.value(), message)
-                .getMessage()
-                .getContent();
-    }
-
-    private ChatCompletionChoice sendRequest(String role, String message) {
+    private ChatCompletionChoice sendRequest(String role, String message, String channel) {
         // If it's a system message then reset the message history
         if (role.equals(ChatMessageRole.SYSTEM.value())) {
             messages = new ArrayList<>();
@@ -58,6 +57,7 @@ public class ChatGPTImpl {
                 .build();
 
         ChatCompletionChoice result = service.createChatCompletion(request).getChoices().get(0);
+        messageHistory.()
         messages.add(result.getMessage());
         return result;
     }

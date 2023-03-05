@@ -20,8 +20,7 @@ public class ChatCache {
 
         // create a new one if it doesn't exist in the cache
         if (chatgpt == null) {
-            chatgpt = new ChatGPTImpl(config.getGuilds().get(guild),
-                    IOUtils.getFileContentsAsString("prompt.txt"),
+            chatgpt = new ChatGPTImpl(IOUtils.getFileContentsAsString("prompt.txt"),
                     config.getOpenaiToken());
 
             // Save the newly created ChatGPT instance.
