@@ -15,7 +15,8 @@ public class AIChannelMessageReceivedListener implements EventListener {
     public void onEvent(@NotNull GenericEvent genericEvent) {
          if (genericEvent instanceof MessageReceivedEvent event) {
              // If not a listening channel
-            if (!config.bot().listeningChannels().contains(event.getChannel().getId())) {
+            if (!config.bot().listeningChannels().contains(event.getChannel().getId())
+                    && Math.random() > config.bot().randomResponseChance()) {
                 return;
             }
 
