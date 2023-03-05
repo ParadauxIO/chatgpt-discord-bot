@@ -7,8 +7,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-
 public class AIChannelMessageReceivedListener implements EventListener {
 
     private static final ConfigHandler.Config config = ConfigHandler.getConfig();

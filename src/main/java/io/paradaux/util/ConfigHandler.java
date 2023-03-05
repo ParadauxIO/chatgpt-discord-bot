@@ -8,7 +8,6 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 
 public class ConfigHandler {
