@@ -2,7 +2,6 @@ package io.paradaux.bot;
 
 import io.paradaux.bot.listeners.AIChannelMessageReceivedListener;
 import io.paradaux.bot.listeners.ReadyListener;
-import io.paradaux.openai.ChatGPTImpl;
 import io.paradaux.util.ConfigHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -19,10 +18,10 @@ public class DiscordBot {
     }
 
     private JDA createClient() {
-        return JDABuilder.createDefault(config.getDiscordToken()) // enable all default intents
+        return JDABuilder.createDefault(config.bot().token()) // enable all default intents
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT) // also enable privileged intent
                 .addEventListeners(new ReadyListener())
-                .addEventListeners(new AIChannelMessageReceivedListener(config.getGuilds()))
+                .addEventListeners(new AIChannelMessageReceivedListener())
                 .build();
     }
 }

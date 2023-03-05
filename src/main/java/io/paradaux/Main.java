@@ -1,5 +1,6 @@
 package io.paradaux;
 
+import com.google.gson.GsonBuilder;
 import io.paradaux.bot.DiscordBot;
 import io.paradaux.util.ConfigHandler;
 import org.slf4j.Logger;
@@ -12,6 +13,5 @@ public class Main {
 
         var config = ConfigHandler.loadConfig();
         var bot = new DiscordBot(config);
-
     }
 }

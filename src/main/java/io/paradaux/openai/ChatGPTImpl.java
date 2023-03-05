@@ -1,39 +1,40 @@
 package io.paradaux.openai;
 
-import com.google.gson.GsonBuilder;
-import com.theokanning.openai.completion.chat.*;
+import com.theokanning.openai.completion.chat.ChatCompletionChoice;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 import io.paradaux.util.ConfigHandler;
-import io.paradaux.util.IOUtils;
 import net.dv8tion.jda.api.entities.Message;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class ChatGPTImpl {
+
+    private static final ConfigHandler.Config config = ConfigHandler.getConfig();
 
     private final OpenAiService service;
 
     // Map between channel IDs and their respective histories
     private final HashMap<String, GPTMessageQueue> messageHistory;
-    private List<ChatMessage> messages;
-    private final String prompt;
 
-    public ChatGPTImpl(String prompt, String openaiToken) {
-        this.prompt = prompt;
-        this.messageHistory = new HashMap<>();
-
+    public ChatGPTImpl() {
         // Set the API key
-        service = new OpenAiService(openaiToken);
+        messageHistory = new HashMap<>();
+        service = new OpenAiService(config.openai().token());
     }
 
     public String respond(Message message) {
         if (!messageHistory.containsKey(message.getChannel().getId())) {
-            messageHistory.put(message.getChannel().getId(), new GPTMessageQueue(10, prompt));
+            messageHistory.put(message.getChannel().getId(), new GPTMessageQueue(config.bot().messageHistoryLength(),
+                    config.openai().prompt()));
         }
 
-        return sendRequest(ChatMessageRole.USER.value(), message.getContentRaw(), message.getChannel().getId())
+        String formattedMessage = String.format("%s#%s: %s", message.getAuthor().getName(),
+                message.getAuthor().getDiscriminator(), message.getContentRaw());
+
+        return sendRequest(ChatMessageRole.USER.value(), formattedMessage, message.getChannel().getId())
                 .getMessage()
                 .getContent();
     }
@@ -41,24 +42,26 @@ public class ChatGPTImpl {
     private ChatCompletionChoice sendRequest(String role, String message, String channel) {
         // If it's a system message then reset the message history
         if (role.equals(ChatMessageRole.SYSTEM.value())) {
-            messages = new ArrayList<>();
+            messageHistory.put(channel, new GPTMessageQueue(config.bot().messageHistoryLength(), config.openai().prompt()));
         }
 
+        // Get the message history
+        GPTMessageQueue history = messageHistory.get(channel);
+
         // Add our new message to the message history
-        messages.add(new ChatMessage("user", message));
+        history.queue(new ChatMessage(role, message));
 
         // Build the GPT request object
         ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .messages(messages)
-                .maxTokens(150)
-                .temperature(0.6)
-                .topP(0.8)
-                .model("gpt-3.5-turbo")
+                .messages(history.toList())
+                .maxTokens(config.openai().maxTokens())
+                .temperature(config.openai().temperature())
+                .topP(config.openai().topP())
+                .model(config.openai().model())
                 .build();
 
         ChatCompletionChoice result = service.createChatCompletion(request).getChoices().get(0);
-        messageHistory.()
-        messages.add(result.getMessage());
+        history.queue(result.getMessage());
         return result;
     }
 }

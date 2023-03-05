@@ -1,28 +1,23 @@
 package io.paradaux.bot.listeners;
 
 import io.paradaux.openai.ChatCache;
-import io.paradaux.openai.ChatGPTImpl;
+import io.paradaux.util.ConfigHandler;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
 public class AIChannelMessageReceivedListener implements EventListener {
 
-    private final HashMap<String, String> guilds;
-
-    public AIChannelMessageReceivedListener(HashMap<String, String> guilds) {
-        this.guilds = guilds;
-    }
+    private static final ConfigHandler.Config config = ConfigHandler.getConfig();
 
     @Override
     public void onEvent(@NotNull GenericEvent genericEvent) {
          if (genericEvent instanceof MessageReceivedEvent event) {
-             // If not in the correct channel for this guild
-            if (!event.getChannel().getId().equals(guilds.get(event.getGuild().getId()))) {
+             // If not a listening channel
+            if (!config.bot().listeningChannels().contains(event.getChannel().getId())) {
                 return;
             }
 
@@ -32,8 +27,8 @@ public class AIChannelMessageReceivedListener implements EventListener {
             }
 
             // Respond using the correct ChatGPT instance according to the guild the message was sent into.
-            String response = ChatCache.respond(event.getGuild().getId(), event.getAuthor(), event.getMessage().getContentRaw());
-            event.getMessage().reply(response).complete();
+            String response = ChatCache.respond(event.getMessage());
+            event.getMessage().reply(response).queue();
         }
     }
 }
