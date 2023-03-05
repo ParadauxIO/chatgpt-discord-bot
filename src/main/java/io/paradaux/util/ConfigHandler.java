@@ -1,7 +1,5 @@
 package io.paradaux.util;
 
-import com.google.gson.annotations.SerializedName;
-import org.apache.commons.collections4.functors.IdentityPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -11,10 +9,11 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 
 public class ConfigHandler {
 
-    private static final String CONFIG_LOCATION = "/sylvester.conf";
+    private static final String CONFIG_LOCATION = "sylvester.conf";
     private static final Logger logger = LoggerFactory.getLogger(ConfigHandler.class);
 
     private static Config config;
@@ -77,18 +76,18 @@ public class ConfigHandler {
 
     @ConfigSerializable
     public static class BotConfig {
-        private String discordToken;
+        private String token;
         private boolean respondOnMention;
         private boolean respondOnReply;
         private String[] wakeWords;
         private double randomResponseChance;
         private int messageHistoryLength;
-        private HashMap<String, String> channelMapping;
+        private List<String> listeningChannels;
         private String[] disabledGuilds;
         private String[] disabledChannels;
 
-        public String discordToken() {
-            return discordToken;
+        public String token() {
+            return token;
         }
 
         public boolean respondOnMention() {
@@ -111,8 +110,8 @@ public class ConfigHandler {
             return messageHistoryLength;
         }
 
-        public HashMap<String, String> channelMapping() {
-            return channelMapping;
+        public List<String> listeningChannels() {
+            return listeningChannels;
         }
 
         public String[] disabledGuilds() {
@@ -126,11 +125,16 @@ public class ConfigHandler {
 
     @ConfigSerializable
     public static class OpenAIConfig {
+        private String token;
         private String model;
         private int maxTokens;
-        private int temperature;
-        private int topP;
+        private double temperature;
+        private double topP;
         private String prompt;
+
+        public String token() {
+            return token;
+        }
 
         public String model() {
             return model;
@@ -140,11 +144,11 @@ public class ConfigHandler {
             return maxTokens;
         }
 
-        public int temperature() {
+        public double temperature() {
             return temperature;
         }
 
-        public int topP() {
+        public double topP() {
             return topP;
         }
 
